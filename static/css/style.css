@@ -1,27 +1,95 @@
-body { padding-top: 2rem; font-family: 'Inter', 'Segoe UI', Roboto, sans-serif; }
-.card { border-radius: 0.8rem; border: 1px solid #D7D7D7; }
-
-.btn-primary { background-color: #B00B1E !important; border-color: #B00B1E !important; }
-.btn-primary:hover { background-color: #8E0918 !important; border-color: #8E0918 !important; }
-.btn-outline-secondary { color: #B00B1E !important; border-color: #B00B1E !important; }
-.btn-outline-secondary:hover { background-color: #B00B1E !important; color: #fff !important; }
-
-.table thead th { background: var(--bs-body-bg); border-bottom: 2px solid #B00B1E !important; }
-.table-striped tbody tr:nth-of-type(odd) { background-color: rgba(176, 11, 30, 0.04); }
-[data-bs-theme="dark"] .card { border: 1px solid #333; }
-[data-bs-theme="dark"] .table-striped tbody tr:nth-of-type(odd) { background-color: rgba(176, 11, 30, 0.2); }
-
-/* Miami branding */
-.miami-title {
-  font-family: 'Oswald', sans-serif; font-weight: 600; letter-spacing: 1px;
-  font-size: 1.9rem; line-height: 1.1; color: #B00B1E; text-transform: uppercase;
+body {
+  padding-top: 2rem;
+  font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
 }
-.miami-subtitle { font-family: 'Inter', sans-serif; font-size: 0.95rem; color: var(--bs-secondary-color); }
-h1, h2, h3, .h1, .h2, .h3 { font-family: 'Oswald', sans-serif; font-weight: 500; }
+
+.card {
+  border-radius: 0.8rem;
+  border: 1px solid #D7D7D7;
+}
+
+/* Primary buttons (blue) */
+.btn-primary {
+  background-color: #0d6efd !important;  /* Bootstrap primary blue */
+  border-color: #0d6efd !important;
+}
+.btn-primary:hover {
+  background-color: #0b5ed7 !important;
+  border-color: #0b5ed7 !important;
+}
+
+/* Outline secondary buttons (blue) */
+.btn-outline-secondary {
+  color: #0d6efd !important;
+  border-color: #0d6efd !important;
+}
+.btn-outline-secondary:hover {
+  background-color: #0d6efd !important;
+  color: #fff !important;
+}
+
+/* Tables */
+.table thead th {
+  background: var(--bs-body-bg);
+  border-bottom: 2px solid #0d6efd !important;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(13, 110, 253, 0.04);
+}
+[data-bs-theme="dark"] .card {
+  border: 1px solid #333;
+}
+[data-bs-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(13, 110, 253, 0.2);
+}
+
+/* Miami branding (RED) */
+.miami-title {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-size: 1.9rem;
+  line-height: 1.1;
+  color: #B00B1E;  /* Red */
+  text-transform: uppercase;
+}
+.miami-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  color: #B00B1E;  /* Red */
+}
+h1, h2, h3, .h1, .h2, .h3 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+}
 
 /* Pagination */
-.page-link { color: #B00B1E !important; border-color: #D7D7D7 !important; }
-.page-link:hover { background-color: rgba(176, 11, 30, 0.1) !important; border-color: #B00B1E !important; color: #8E0918 !important; }
-.page-item.active .page-link { background-color: #B00B1E !important; border-color: #B00B1E !important; color: #fff !important; }
-[data-bs-theme="dark"] .page-link { color: #FFCDD2 !important; }
-[data-bs-theme="dark"] .page-item.active .page-link { background-color: #B00B1E !important; border-color: #B00B1E !important; color: #fff !important; }
+.page-link {
+  color: #0d6efd !important;
+  border-color: #D7D7D7 !important;
+}
+.page-link:hover {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+  border-color: #0d6efd !important;
+  color: #0b5ed7 !important;
+}
+.page-item.active .page-link {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+  color: #fff !important;
+}
+[data-bs-theme="dark"] .page-link {
+  color: #BBDEFB !important;
+}
+[data-bs-theme="dark"] .page-item.active .page-link {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+  color: #fff !important;
+}
+
+/* ALERTS REMAIN RED */
+.alert-danger {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: #fff !important;
+}
