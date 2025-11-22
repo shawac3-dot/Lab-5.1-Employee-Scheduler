@@ -22,6 +22,46 @@
           <div class="miami-subtitle">by Austin Shaw</div>
         </div>
       </header>
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
+
+<div class="card mb-4 shadow-sm p-3">
+    <h2 class="h5 mb-3">Employee Schedule</h2>
+    <div id='calendar'></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        selectable: true,
+        editable: true,
+        events: '/api/schedules',  // Fetch from backend
+
+        select: function(info) {
+            // Simple modal-like prompt
+            let employeeId = prompt("Enter Employee ID for " + info.startStr);
+            let startTime = prompt("Start time (HH:MM)");
+            let endTime = prompt("End time (HH:MM)");
+
+            if(employeeId && startTime && endTime){
+                fetch('/api/schedules', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        employee_id: employeeId,
+                        date: info.startStr,
+                        start_time: startTime,
+                        end_time: endTime
+                    })
+                }).then(() => calendar.refetchEvents());
+            }
+        }
+    });
+    calendar.render();
+});
+</script>
 
       <!-- Flash messages -->
       {% with msgs = get_flashed_messages(with_categories=True) %}
