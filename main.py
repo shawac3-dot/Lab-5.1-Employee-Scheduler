@@ -7,7 +7,7 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
-DATABASE = '/nfs/employees.db'
+DATABASE = 'employees.db'
 PER_PAGE_DEFAULT = 10
 
 def get_db():
@@ -28,7 +28,7 @@ def init_db():
                 hourly_rate REAL NOT NULL
             );
         ''')
-        # Time logs
+        # Time log table
         db.execute('''
             CREATE TABLE IF NOT EXISTS time_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +39,7 @@ def init_db():
                 FOREIGN KEY(employee_id) REFERENCES employees(employee_id)
             );
         ''')
-        # Schedules
+        # Schedule table
         db.execute('''
             CREATE TABLE IF NOT EXISTS schedules (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -58,6 +58,39 @@ def index():
     if request.method == 'POST':
         action = request.form.get('action')
 
+        # ADD employee
+        if action == 'add':
+            employee_id = request.form.get('employee_id')
+            name = request.form.get('name')
+            phone = request.form.get('phone')
+            hourly_rate = request.form.get('hourly_rate')
+            if employee_id and name and phone and hourly_rate:
+                db = get_db()
+                db.execute('INSERT INTO employees (employee_id, name, phone, hourly_rate) VALUES (?, ?, ?, ?)',
+                           (employee_id, name, phone, hourly_rate))
+                db.commit(); db.close()
+                flash('Employee added successfully.', 'success')
+            else:
+                flash('Missing fields for new employee.', 'danger')
+            return redirect(url_for('index'))
+
+        # UPDATE employee
+        if action == 'update':
+            emp_id = request.form.get('id')
+            employee_id = request.form.get('employee_id')
+            name = request.form.get('name')
+            phone = request.form.get('phone')
+            hourly_rate = request.form.get('hourly_rate')
+            if emp_id and employee_id and name and phone and hourly_rate:
+                db = get_db()
+                db.execute('UPDATE employees SET employee_id=?, name=?, phone=?, hourly_rate=? WHERE id=?',
+                           (employee_id, name, phone, hourly_rate, emp_id))
+                db.commit(); db.close()
+                flash('Employee updated.', 'success')
+            else:
+                flash('Missing fields for update.', 'danger')
+            return redirect(url_for('index'))
+
         # DELETE employee
         if action == 'delete':
             emp_id = request.form.get('id')
@@ -72,126 +105,66 @@ def index():
                 flash('Missing employee id.', 'danger')
             return redirect(url_for('index'))
 
-        # UPDATE employee
-        if action == 'update':
-            emp_id = request.form.get('id')
-            employee_id = request.form.get('employee_id')
-            name = request.form.get('name')
-            phone = request.form.get('phone')
-            hourly_rate = request.form.get('hourly_rate')
-            if emp_id and employee_id and name and phone and hourly_rate:
-                db = get_db()
-                db.execute('''
-                    UPDATE employees
-                    SET employee_id=?, name=?, phone=?, hourly_rate=?
-                    WHERE id=?
-                ''', (employee_id, name, phone, hourly_rate, emp_id))
-                db.commit(); db.close()
-                flash('Employee updated.', 'success')
-            else:
-                flash('Missing fields for update.', 'danger')
-            return redirect(url_for('index'))
-
-        # ADD new employee
-        employee_id = request.form.get('employee_id')
-        name = request.form.get('name')
-        phone = request.form.get('phone')
-        hourly_rate = request.form.get('hourly_rate')
-        if employee_id and name and phone and hourly_rate:
-            db = get_db()
-            db.execute('''
-                INSERT INTO employees (employee_id, name, phone, hourly_rate)
-                VALUES (?, ?, ?, ?)
-            ''', (employee_id, name, phone, hourly_rate))
-            db.commit(); db.close()
-            flash('Employee added successfully.', 'success')
-        else:
-            flash('Missing fields for new employee.', 'danger')
-        return redirect(url_for('index'))
-
     # GET: pagination
-    try:
-        page = max(int(request.args.get('page', 1)), 1)
-    except ValueError:
-        page = 1
-    try:
-        per_page = max(int(request.args.get('per', PER_PAGE_DEFAULT)), 1)
-    except ValueError:
-        per_page = PER_PAGE_DEFAULT
+    page = max(int(request.args.get('page', 1)), 1)
+    per_page = max(int(request.args.get('per', PER_PAGE_DEFAULT)), 1)
     offset = (page - 1) * per_page
 
     db = get_db()
     total = db.execute('SELECT COUNT(*) FROM employees').fetchone()[0]
-    employees = db.execute(
-        'SELECT * FROM employees ORDER BY id DESC LIMIT ? OFFSET ?',
-        (per_page, offset)
-    ).fetchall()
+    employees = db.execute('SELECT * FROM employees ORDER BY id DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
 
     # Calculate total hours worked
-    employee_list = []
+    employees_with_hours = []
     for emp in employees:
-        total_hours = db.execute(
-            'SELECT SUM(hours_worked) FROM time_logs WHERE employee_id=?',
-            (emp['employee_id'],)
-        ).fetchone()[0] or 0
-        emp = dict(emp)
-        emp['total_hours'] = round(total_hours, 2)
-        employee_list.append(emp)
+        total_hours = db.execute('SELECT SUM(hours_worked) FROM time_logs WHERE employee_id=?',
+                                 (emp['employee_id'],)).fetchone()[0] or 0
+        emp_dict = dict(emp)
+        emp_dict['total_hours'] = round(total_hours, 2)
+        employees_with_hours.append(emp_dict)
 
     db.close()
-
     pages = max(1, math.ceil(total / per_page))
     has_prev = page > 1
     has_next = page < pages
     start_page = max(1, page - 2)
     end_page = min(pages, page + 2)
 
-    return render_template(
-        'index.html',
-        employees=employee_list,
-        page=page, pages=pages, per_page=per_page,
-        has_prev=has_prev, has_next=has_next, total=total,
-        start_page=start_page, end_page=end_page
-    )
+    return render_template('index.html',
+                           employees=employees_with_hours,
+                           page=page, pages=pages, per_page=per_page,
+                           has_prev=has_prev, has_next=has_next, total=total,
+                           start_page=start_page, end_page=end_page)
 
 @app.route('/clock', methods=['POST'])
 def clock():
     employee_id = request.form.get('employee_id')
-    action = request.form.get('action')  # clock_in or clock_out
+    action = request.form.get('action')
     if not employee_id or not action:
         flash('Missing employee ID or action.', 'danger')
         return redirect(url_for('index'))
 
     db = get_db()
     now = datetime.now()
-
     if action == 'clock_in':
-        db.execute(
-            'INSERT INTO time_logs (employee_id, clock_in) VALUES (?, ?)',
-            (employee_id, now.isoformat(timespec='seconds'))
-        )
+        db.execute('INSERT INTO time_logs (employee_id, clock_in) VALUES (?, ?)',
+                   (employee_id, now.isoformat(timespec='seconds')))
         flash(f'Employee {employee_id} clocked in at {now.strftime("%H:%M:%S")}.', 'success')
-
     elif action == 'clock_out':
-        log = db.execute(
-            'SELECT * FROM time_logs WHERE employee_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1',
-            (employee_id,)
-        ).fetchone()
+        log = db.execute('SELECT * FROM time_logs WHERE employee_id=? AND clock_out IS NULL ORDER BY id DESC LIMIT 1',
+                         (employee_id,)).fetchone()
         if log:
             clock_in_time = datetime.fromisoformat(log['clock_in'])
             delta_hours = (now - clock_in_time).total_seconds() / 3600
-            db.execute(
-                'UPDATE time_logs SET clock_out=?, hours_worked=? WHERE id=?',
-                (now.isoformat(timespec='seconds'), delta_hours, log['id'])
-            )
+            db.execute('UPDATE time_logs SET clock_out=?, hours_worked=? WHERE id=?',
+                       (now.isoformat(timespec='seconds'), delta_hours, log['id']))
             flash(f'Employee {employee_id} clocked out at {now.strftime("%H:%M:%S")} ({delta_hours:.2f} hours).', 'success')
         else:
             flash('No clock-in found to clock out.', 'danger')
-
     db.commit(); db.close()
     return redirect(url_for('index'))
 
-# FullCalendar API
+# API to get schedules for FullCalendar
 @app.route('/api/schedules', methods=['GET'])
 def get_schedules():
     db = get_db()
@@ -201,31 +174,24 @@ def get_schedules():
         JOIN employees e ON s.employee_id = e.employee_id
     ''').fetchall()
     db.close()
-    events = []
-    for r in rows:
-        events.append({
-            "id": r['id'],
-            "title": r['name'],
-            "start": f"{r['date']}T{r['start_time']}",
-            "end": f"{r['date']}T{r['end_time']}"
-        })
+    events = [{"id": r["id"], "title": r["name"], "start": f"{r['date']}T{r['start_time']}", "end": f"{r['date']}T{r['end_time']}"} for r in rows]
     return jsonify(events)
 
+# API to add schedule
 @app.route('/api/schedules', methods=['POST'])
 def add_schedule():
     data = request.json
     db = get_db()
-    db.execute('''
-        INSERT INTO schedules (employee_id, date, start_time, end_time)
-        VALUES (?, ?, ?, ?)
-    ''', (data['employee_id'], data['date'], data['start_time'], data['end_time']))
+    db.execute('INSERT INTO schedules (employee_id, date, start_time, end_time) VALUES (?, ?, ?, ?)',
+               (data['employee_id'], data['date'], data['start_time'], data['end_time']))
     db.commit()
     db.close()
     return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
     init_db()
+    port = int(os.environ.get("PORT", 5000))
     app.run(debug=True, host='0.0.0.0', port=port)
+
 
 
