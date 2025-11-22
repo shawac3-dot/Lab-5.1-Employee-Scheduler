@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Contacts</title>
+    <title>Employee Management</title>
 
-    <!-- Fonts (branding) -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
 
       <header class="mb-4 py-3 border-bottom d-flex align-items-center">
         <div>
-          <div class="miami-title">Lab 4.2</div>
+          <div class="miami-title">Employee Management</div>
           <div class="miami-subtitle">by Austin Shaw</div>
         </div>
       </header>
@@ -38,23 +38,31 @@
         {% endif %}
       {% endwith %}
 
-      <!-- Add form -->
+      <!-- Add employee form -->
       <div class="card shadow-sm form-card mb-4">
         <div class="card-body">
-          <h2 class="h5 mb-3">Add Contact</h2>
+          <h2 class="h5 mb-3">Add Employee</h2>
           <form method="POST" action="{{ url_for('index') }}" class="row g-3">
             <input type="hidden" name="action" value="add">
-            <div class="col-md-6">
+            <div class="col-md-3">
+              <label for="employee_id" class="form-label">Employee ID</label>
+              <input class="form-control" id="employee_id" name="employee_id" required>
+            </div>
+            <div class="col-md-3">
               <label for="name" class="form-label">Name</label>
               <input class="form-control" id="name" name="name" required>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-3">
               <label for="phone" class="form-label">Phone</label>
               <input class="form-control" id="phone" name="phone" required
                      pattern="^[0-9()+\\-\\s]+$" title="Digits, spaces, (), - and + only">
             </div>
+            <div class="col-md-3">
+              <label for="hourly_rate" class="form-label">Hourly Rate</label>
+              <input type="number" step="0.01" class="form-control" id="hourly_rate" name="hourly_rate" required>
+            </div>
             <div class="col-12">
-              <button class="btn btn-primary" type="submit">Add Contact</button>
+              <button class="btn btn-primary" type="submit">Add Employee</button>
             </div>
           </form>
         </div>
@@ -62,51 +70,68 @@
 
       <!-- Search + heading -->
       <div class="d-flex justify-content-between align-items-center mb-2">
-        <h2 class="h5 m-0">All Contacts</h2>
+        <h2 class="h5 m-0">All Employees</h2>
         <input id="filter" class="form-control" style="max-width: 280px;" placeholder="Search…">
       </div>
 
-      <!-- Contacts table -->
+      <!-- Employees table -->
       <div class="card shadow-sm mb-3">
         <div class="table-responsive">
           <table class="table align-middle mb-0 table-striped">
             <thead>
               <tr>
-                <th style="width: 8ch">ID</th>
-                <th style="width: 50%">Name</th>
-                <th style="width: 30%">Phone</th>
-                <th class="text-end" style="width: 12%">Actions</th>
+                <th>ID</th>
+                <th>Employee ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Hourly Rate</th>
+                <th>Total Hours</th>
+                <th class="text-end">Actions</th>
               </tr>
             </thead>
             <tbody id="rows">
-              {% for c in contacts %}
+              {% for e in employees %}
               <tr>
-                <td class="id text-secondary">{{ c['id'] }}</td>
-                <td class="name">{{ c['name'] }}</td>
-                <td class="phone text-nowrap">{{ c['phone'] }}</td>
+                <td class="id text-secondary">{{ e['id'] }}</td>
+                <td class="employee_id">{{ e['employee_id'] }}</td>
+                <td class="name">{{ e['name'] }}</td>
+                <td class="phone text-nowrap">{{ e['phone'] }}</td>
+                <td class="hourly_rate">${{ e['hourly_rate'] }}</td>
+                <td class="total_hours">{{ e['total_hours'] }}</td>
                 <td class="text-end">
                   <div class="d-inline-flex gap-2">
+                    <!-- Edit button -->
                     <button
                       type="button"
                       class="btn btn-sm btn-outline-secondary"
                       data-bs-toggle="modal"
                       data-bs-target="#editModal"
-                      data-id="{{ c['id'] }}"
-                      data-name="{{ c['name'] }}"
-                      data-phone="{{ c['phone'] }}"
+                      data-id="{{ e['id'] }}"
+                      data-employee_id="{{ e['employee_id'] }}"
+                      data-name="{{ e['name'] }}"
+                      data-phone="{{ e['phone'] }}"
+                      data-hourly_rate="{{ e['hourly_rate'] }}"
                     >Edit</button>
 
-                    <form method="POST" action="{{ url_for('index') }}" onsubmit="return confirm('Delete this contact?')">
-                      <input type="hidden" name="contact_id" value="{{ c['id'] }}">
+                    <!-- Delete form -->
+                    <form method="POST" action="{{ url_for('index') }}" onsubmit="return confirm('Delete this employee?')">
+                      <input type="hidden" name="id" value="{{ e['id'] }}">
                       <input type="hidden" name="action" value="delete">
                       <button class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+
+                    <!-- Clock in/out form -->
+                    <form method="POST" action="{{ url_for('clock') }}" class="d-inline-flex gap-1">
+                      <input type="hidden" name="employee_id" value="{{ e['employee_id'] }}">
+                      <button type="submit" name="action" value="clock_in" class="btn btn-sm btn-success">Clock In</button>
+                      <button type="submit" name="action" value="clock_out" class="btn btn-sm btn-warning">Clock Out</button>
                     </form>
                   </div>
                 </td>
               </tr>
               {% endfor %}
-              {% if not contacts %}
-              <tr><td colspan="4" class="text-center text-secondary py-4">No contacts found.</td></tr>
+              {% if not employees %}
+              <tr><td colspan="7" class="text-center text-secondary py-4">No employees found.</td></tr>
               {% endif %}
             </tbody>
           </table>
@@ -114,7 +139,7 @@
       </div>
 
       <!-- Pagination -->
-      <nav aria-label="Contacts pagination" class="d-flex justify-content-between align-items-center">
+      <nav aria-label="Employees pagination" class="d-flex justify-content-between align-items-center">
         <div class="text-secondary small">
           Page <strong>{{ page }}</strong> of <strong>{{ pages }}</strong> · {{ total }} total
         </div>
@@ -143,20 +168,28 @@
       <div class="modal-dialog">
         <form method="POST" action="{{ url_for('index') }}" class="modal-content">
           <input type="hidden" name="action" value="update">
-          <input type="hidden" name="contact_id" id="edit-id">
+          <input type="hidden" name="id" id="edit-id">
           <div class="modal-header">
-            <h5 class="modal-title">Edit Contact</h5>
+            <h5 class="modal-title">Edit Employee</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body row g-3">
-            <div class="col-12">
+            <div class="col-6">
+              <label class="form-label">Employee ID</label>
+              <input class="form-control" name="employee_id" id="edit-employee_id" required>
+            </div>
+            <div class="col-6">
               <label class="form-label">Name</label>
               <input class="form-control" name="name" id="edit-name" required>
             </div>
-            <div class="col-12">
+            <div class="col-6">
               <label class="form-label">Phone</label>
               <input class="form-control" name="phone" id="edit-phone" required
                      pattern="^[0-9()+\\-\\s]+$" title="Digits, spaces, (), - and + only">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Hourly Rate</label>
+              <input type="number" step="0.01" class="form-control" name="hourly_rate" id="edit-hourly_rate" required>
             </div>
           </div>
           <div class="modal-footer">
@@ -168,6 +201,17 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+      // Prefill edit modal with employee data
+      const editModal = document.getElementById('editModal')
+      editModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        document.getElementById('edit-id').value = button.getAttribute('data-id')
+        document.getElementById('edit-employee_id').value = button.getAttribute('data-employee_id')
+        document.getElementById('edit-name').value = button.getAttribute('data-name')
+        document.getElementById('edit-phone').value = button.getAttribute('data-phone')
+        document.getElementById('edit-hourly_rate').value = button.getAttribute('data-hourly_rate')
+      })
+    </script>
   </body>
 </html>
