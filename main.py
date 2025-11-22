@@ -10,9 +10,6 @@ app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 DATABASE = '/nfs/employees.db'
 PER_PAGE_DEFAULT = 10
 
-# ----------------------------
-# Database functions
-# ----------------------------
 def get_db():
     db = sqlite3.connect(DATABASE)
     db.row_factory = sqlite3.Row
@@ -27,9 +24,8 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 employee_id TEXT UNIQUE NOT NULL,
                 name TEXT NOT NULL,
-                phone TEXT,
-                hourly_rate REAL NOT NULL,
-                total_hours REAL DEFAULT 0
+                phone TEXT NOT NULL,
+                hourly_rate REAL NOT NULL
             );
         ''')
         # Time logs
@@ -57,36 +53,26 @@ def init_db():
         db.commit()
         db.close()
 
-# ----------------------------
-# Flask Routes
-# ----------------------------
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         action = request.form.get('action')
 
-        # Delete employee
+        # DELETE employee
         if action == 'delete':
             emp_id = request.form.get('id')
             if emp_id:
                 db = get_db()
-                # Get employee_id string for time_logs
-                emp_row = db.execute('SELECT employee_id FROM employees WHERE id=?', (emp_id,)).fetchone()
-                if emp_row:
-                    employee_id_str = emp_row['employee_id']
-                    db.execute('DELETE FROM employees WHERE id=?', (emp_id,))
-                    db.execute('DELETE FROM time_logs WHERE employee_id=?', (employee_id_str,))
-                    db.execute('DELETE FROM schedules WHERE employee_id=?', (employee_id_str,))
-                    db.commit()
-                    db.close()
-                    flash('Employee deleted successfully.', 'success')
-                else:
-                    flash('Employee not found.', 'danger')
+                db.execute('DELETE FROM employees WHERE id = ?', (emp_id,))
+                db.execute('DELETE FROM time_logs WHERE employee_id = ?', (emp_id,))
+                db.execute('DELETE FROM schedules WHERE employee_id = ?', (emp_id,))
+                db.commit(); db.close()
+                flash('Employee deleted successfully.', 'success')
             else:
                 flash('Missing employee id.', 'danger')
             return redirect(url_for('index'))
 
-        # Update employee
+        # UPDATE employee
         if action == 'update':
             emp_id = request.form.get('id')
             employee_id = request.form.get('employee_id')
@@ -100,14 +86,13 @@ def index():
                     SET employee_id=?, name=?, phone=?, hourly_rate=?
                     WHERE id=?
                 ''', (employee_id, name, phone, hourly_rate, emp_id))
-                db.commit()
-                db.close()
+                db.commit(); db.close()
                 flash('Employee updated.', 'success')
             else:
                 flash('Missing fields for update.', 'danger')
             return redirect(url_for('index'))
 
-        # Add new employee
+        # ADD new employee
         employee_id = request.form.get('employee_id')
         name = request.form.get('name')
         phone = request.form.get('phone')
@@ -118,8 +103,7 @@ def index():
                 INSERT INTO employees (employee_id, name, phone, hourly_rate)
                 VALUES (?, ?, ?, ?)
             ''', (employee_id, name, phone, hourly_rate))
-            db.commit()
-            db.close()
+            db.commit(); db.close()
             flash('Employee added successfully.', 'success')
         else:
             flash('Missing fields for new employee.', 'danger')
@@ -138,18 +122,21 @@ def index():
 
     db = get_db()
     total = db.execute('SELECT COUNT(*) FROM employees').fetchone()[0]
-    employees = db.execute('SELECT * FROM employees ORDER BY id DESC LIMIT ? OFFSET ?', (per_page, offset)).fetchall()
+    employees = db.execute(
+        'SELECT * FROM employees ORDER BY id DESC LIMIT ? OFFSET ?',
+        (per_page, offset)
+    ).fetchall()
 
-    # Add total_hours from time_logs
-    employees_with_hours = []
+    # Calculate total hours worked
+    employee_list = []
     for emp in employees:
         total_hours = db.execute(
             'SELECT SUM(hours_worked) FROM time_logs WHERE employee_id=?',
             (emp['employee_id'],)
         ).fetchone()[0] or 0
-        emp_dict = dict(emp)
-        emp_dict['total_hours'] = round(total_hours, 2)
-        employees_with_hours.append(emp_dict)
+        emp = dict(emp)
+        emp['total_hours'] = round(total_hours, 2)
+        employee_list.append(emp)
 
     db.close()
 
@@ -161,15 +148,12 @@ def index():
 
     return render_template(
         'index.html',
-        employees=employees_with_hours,
+        employees=employee_list,
         page=page, pages=pages, per_page=per_page,
         has_prev=has_prev, has_next=has_next, total=total,
         start_page=start_page, end_page=end_page
     )
 
-# ----------------------------
-# Clock in/out
-# ----------------------------
 @app.route('/clock', methods=['POST'])
 def clock():
     employee_id = request.form.get('employee_id')
@@ -204,23 +188,19 @@ def clock():
         else:
             flash('No clock-in found to clock out.', 'danger')
 
-    db.commit()
-    db.close()
+    db.commit(); db.close()
     return redirect(url_for('index'))
 
-# ----------------------------
-# API for FullCalendar
-# ----------------------------
+# FullCalendar API
 @app.route('/api/schedules', methods=['GET'])
 def get_schedules():
     db = get_db()
     rows = db.execute('''
-        SELECT s.id, s.date, s.start_time, s.end_time, e.name, s.employee_id
+        SELECT s.id, s.date, s.start_time, s.end_time, e.name
         FROM schedules s
         JOIN employees e ON s.employee_id = e.employee_id
     ''').fetchall()
     db.close()
-
     events = []
     for r in rows:
         events.append({
@@ -243,11 +223,9 @@ def add_schedule():
     db.close()
     return jsonify({"status": "ok"})
 
-# ----------------------------
-# Main
-# ----------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     init_db()
     app.run(debug=True, host='0.0.0.0', port=port)
+
 
