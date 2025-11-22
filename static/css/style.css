@@ -10,7 +10,7 @@ body {
 
 /* Primary buttons (blue) */
 .btn-primary {
-  background-color: #0d6efd !important;
+  background-color: #0d6efd !important;  /* Bootstrap primary blue */
   border-color: #0d6efd !important;
 }
 .btn-primary:hover {
@@ -36,6 +36,12 @@ body {
 .table-striped tbody tr:nth-of-type(odd) {
   background-color: rgba(13, 110, 253, 0.04);
 }
+[data-bs-theme="dark"] .card {
+  border: 1px solid #333;
+}
+[data-bs-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(13, 110, 253, 0.2);
+}
 
 /* Miami branding */
 .miami-title {
@@ -44,13 +50,41 @@ body {
   letter-spacing: 1px;
   font-size: 1.9rem;
   line-height: 1.1;
-  color: #0d6efd;
+  color: #0d6efd;  /* Blue */
   text-transform: uppercase;
 }
 .miami-subtitle {
   font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
-  color: red;
+  color: var(--bs-secondary-color);
+}
+h1, h2, h3, .h1, .h2, .h3 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+}
+
+/* Pagination */
+.page-link {
+  color: #0d6efd !important;
+  border-color: #D7D7D7 !important;
+}
+.page-link:hover {
+  background-color: rgba(13, 110, 253, 0.1) !important;
+  border-color: #0d6efd !important;
+  color: #0b5ed7 !important;
+}
+.page-item.active .page-link {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+  color: #fff !important;
+}
+[data-bs-theme="dark"] .page-link {
+  color: #BBDEFB !important;
+}
+[data-bs-theme="dark"] .page-item.active .page-link {
+  background-color: #0d6efd !important;
+  border-color: #0d6efd !important;
+  color: #fff !important;
 }
 
 /* ALERTS REMAIN RED */
