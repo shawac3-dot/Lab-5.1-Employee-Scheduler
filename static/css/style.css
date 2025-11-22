@@ -93,3 +93,61 @@ h1, h2, h3, .h1, .h2, .h3 {
   border-color: #dc3545 !important;
   color: #fff !important;
 }
+
+/* FullCalendar styling */
+.fc {
+  font-family: 'Inter', sans-serif;
+  color: #212529; /* default text color */
+}
+
+.fc-toolbar-title {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  color: #0d6efd; /* Blue title */
+}
+
+.fc button {
+  background-color: #0d6efd !important;
+  border: 1px solid #0d6efd !important;
+  color: #fff !important;
+}
+
+.fc button:hover {
+  background-color: #0b5ed7 !important;
+  border-color: #0b5ed7 !important;
+}
+
+.fc .fc-daygrid-event {
+  background-color: #0d6efd;
+  border-color: #0b5ed7;
+  color: #fff;
+  font-weight: 500;
+  border-radius: 0.4rem;
+}
+
+.fc .fc-daygrid-event:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.fc .fc-scrollgrid {
+  border: 1px solid #D7D7D7;
+}
+
+.fc .fc-col-header-cell {
+  background-color: rgba(13, 110, 253, 0.05);
+  border-bottom: 2px solid #0d6efd;
+}
+
+/* Alerts remain red */
+.alert-danger {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: #fff !important;
+}
+
+/* Optional: highlight selected day */
+.fc .fc-daygrid-day.fc-day-today {
+  background-color: rgba(13, 110, 253, 0.1);
+  border-radius: 0.4rem;
+}
