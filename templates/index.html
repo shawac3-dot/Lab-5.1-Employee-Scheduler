@@ -24,19 +24,19 @@
       </header>
 
       <!-- Flash messages -->
-     {% with msgs = get_flashed_messages(with_categories=True) %}
-  {% if msgs %}
-    <div class="mb-3">
-      {% for category, m in msgs %}
-        {% set bs = 'success' if category=='success' else 'danger' if category=='danger' else 'primary' %}
-        <div class="alert alert-{{ bs }} alert-dismissible fade show" role="alert">
-          {{ m }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
+      {% with msgs = get_flashed_messages(with_categories=True) %}
+        {% if msgs %}
+          <div class="mb-3">
+            {% for category, m in msgs %}
+              {% set bs = 'success' if category=='success' else 'danger' if category=='danger' else 'primary' %}
+              <div class="alert alert-{{ bs }} alert-dismissible fade show" role="alert">
+                {{ m }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
 
       <!-- Add employee form -->
       <div class="card shadow-sm form-card mb-4">
@@ -103,7 +103,7 @@
                     <!-- Edit button -->
                     <button
                       type="button"
-                      class="btn btn-sm btn-outline-primary"
+                      class="btn btn-sm btn-outline-secondary"
                       data-bs-toggle="modal"
                       data-bs-target="#editModal"
                       data-id="{{ e['id'] }}"
@@ -117,7 +117,7 @@
                     <form method="POST" action="{{ url_for('index') }}" onsubmit="return confirm('Delete this employee?')">
                       <input type="hidden" name="id" value="{{ e['id'] }}">
                       <input type="hidden" name="action" value="delete">
-                      <button class="btn btn-sm btn-outline-primary">Delete</button>
+                      <button class="btn btn-sm btn-outline-danger">Delete</button>
                     </form>
 
                     <!-- Clock in/out form -->
@@ -193,14 +193,25 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn btn-primary" type="submit">Save changes</button>
             <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+            <button class="btn btn-primary" type="submit">Save changes</button>
           </div>
         </form>
       </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+      // Prefill edit modal with employee data
+      const editModal = document.getElementById('editModal')
+      editModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        document.getElementById('edit-id').value = button.getAttribute('data-id')
+        document.getElementById('edit-employee_id').value = button.getAttribute('data-employee_id')
+        document.getElementById('edit-name').value = button.getAttribute('data-name')
+        document.getElementById('edit-phone').value = button.getAttribute('data-phone')
+        document.getElementById('edit-hourly_rate').value = button.getAttribute('data-hourly_rate')
+      })
+    </script>
   </body>
 </html>
