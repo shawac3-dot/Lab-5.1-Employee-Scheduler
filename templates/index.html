@@ -46,16 +46,15 @@
             <input type="hidden" name="action" value="add">
             <div class="col-md-3">
               <label for="employee_id" class="form-label">Employee ID</label>
-              <input class="form-control" id="employee_id" name="employee_id" required>
+              <input class="form-control" id="employee_id" name="employee_id" required pattern="\d+" title="Digits only">
             </div>
             <div class="col-md-3">
               <label for="name" class="form-label">Name</label>
-              <input class="form-control" id="name" name="name" required>
+              <input class="form-control" id="name" name="name" required pattern="[A-Za-z ]+" title="Letters and spaces only">
             </div>
             <div class="col-md-3">
               <label for="phone" class="form-label">Phone</label>
-              <input class="form-control" id="phone" name="phone" required
-                     pattern="^[0-9()+\\-\\s]+$" title="Digits, spaces, (), - and + only">
+              <input class="form-control" id="phone" name="phone" required pattern="\d+" title="Digits only">
             </div>
             <div class="col-md-3">
               <label for="hourly_rate" class="form-label">Hourly Rate</label>
@@ -96,8 +95,8 @@
                 <td class="employee_id">{{ e['employee_id'] }}</td>
                 <td class="name">{{ e['name'] }}</td>
                 <td class="phone text-nowrap">{{ e['phone'] }}</td>
-                <td class="hourly_rate">${{ e['hourly_rate'] }}</td>
-                <td class="total_hours">{{ e['total_hours'] }}</td>
+                <td class="hourly_rate">${{ "%.2f"|format(e['hourly_rate']) }}</td>
+                <td class="total_hours">{{ "%.2f"|format(e['total_hours']) }}</td>
                 <td class="text-end">
                   <div class="d-inline-flex gap-2">
                     <!-- Edit button -->
@@ -125,6 +124,12 @@
                       <input type="hidden" name="employee_id" value="{{ e['employee_id'] }}">
                       <button type="submit" name="action" value="clock_in" class="btn btn-sm btn-success">Clock In</button>
                       <button type="submit" name="action" value="clock_out" class="btn btn-sm btn-warning">Clock Out</button>
+                    </form>
+
+                    <!-- Reset Hours form -->
+                    <form method="POST" action="{{ url_for('reset_hours') }}" class="d-inline-flex">
+                      <input type="hidden" name="employee_id" value="{{ e['employee_id'] }}">
+                      <button type="submit" class="btn btn-sm btn-warning">Reset Hours</button>
                     </form>
                   </div>
                 </td>
@@ -176,16 +181,15 @@
           <div class="modal-body row g-3">
             <div class="col-6">
               <label class="form-label">Employee ID</label>
-              <input class="form-control" name="employee_id" id="edit-employee_id" required>
+              <input class="form-control" name="employee_id" id="edit-employee_id" required pattern="\d+" title="Digits only">
             </div>
             <div class="col-6">
               <label class="form-label">Name</label>
-              <input class="form-control" name="name" id="edit-name" required>
+              <input class="form-control" name="name" id="edit-name" required pattern="[A-Za-z ]+" title="Letters and spaces only">
             </div>
             <div class="col-6">
               <label class="form-label">Phone</label>
-              <input class="form-control" name="phone" id="edit-phone" required
-                     pattern="^[0-9()+\\-\\s]+$" title="Digits, spaces, (), - and + only">
+              <input class="form-control" name="phone" id="edit-phone" required pattern="\d+" title="Digits only">
             </div>
             <div class="col-6">
               <label class="form-label">Hourly Rate</label>
@@ -215,3 +219,4 @@
     </script>
   </body>
 </html>
+
